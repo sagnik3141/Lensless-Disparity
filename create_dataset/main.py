@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from scipy import fft
 import cv2
+from tqdm import tqdm
 
 from file_io import read_disp
 
@@ -99,7 +100,28 @@ def main():
     common_fnames = [Path(x).stem for x in left_paths if x in right_paths]
     common_fnames = [Path(x).stem for x in disp_paths if Path(x).stem in common_fnames]
 
-    
+    if not os.path.exists(args.target_dir):
+        os.makedirs(args.target_dir)
+
+    os.makedirs(os.path.join(args.target_dir, 'left'))
+    os.makedirs(os.path.join(args.target_dir, 'right'))
+    os.makedirs(os.path.join(args.target_dir, 'disp'))
+
+    psf = np.load(args.psf_path)
+
+    target_fnum = 0
+    for i in args.num_passes:
+        for fname in tqdm(common_fnames):
+            left_path = os.path.join(args.left_dir, fname+'.png')
+            right_path = os.path.join(args.right_dir, fname+'.png')
+            disp_path = os.path.join(args.disp_dir, fname+'.pfm')
+
+            left_img, right_img, disp = loadCropImg(left_path, right_path, disp_path)
+
+            left_meas = RGB2Lensless(left_img, psf)
+            right_meas = RGB2Lensless(right_img, psf)
+
+            
 
 
 
