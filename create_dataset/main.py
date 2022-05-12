@@ -1,5 +1,6 @@
 import os
 import random
+import argparse
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -71,7 +72,7 @@ def crop(left_img, right_img, disp, size=(320, 320)):
     """
     Returns Random Cropped image given target size.
     """
-    dim1, dim2, _ = img.shape
+    dim1, dim2, _ = left_img.shape
     c1 = np.random.choice(dim1 - size[0])
     c2 = np.random.choice(dim2 - size[1])
 
@@ -115,7 +116,7 @@ def getArgs():
         '--target_dir',
         type=str,
         default='lensless_disp_dataset')
-    parser.add_argument('--psf_path', type=str, default='')
+    parser.add_argument('--psf_path', type=str, default='basler_phlatcam_psf_binned2x_320x448_rgb.npy')
     parser.add_argument('--num_passes', type=int, default=3)
 
     args = parser.parse_args()
@@ -146,8 +147,9 @@ def main():
     psf = np.load(args.psf_path)
 
     target_fnum = 0
-    for i in args.num_passes:
+    for i in range(args.num_passes):
         for fname in tqdm(common_fnames):
+            target_fnum+=1
             left_path = os.path.join(args.left_dir, fname + '.png')
             right_path = os.path.join(args.right_dir, fname + '.png')
             disp_path = os.path.join(args.disp_dir, fname + '.pfm')
@@ -163,8 +165,8 @@ def main():
             imageio.imwrite(
                 os.path.join(
                     args.target_dir,
-                    'left') +
-                target_fnum +
+                    'left') + '/' +
+                str(target_fnum) +
                 '.png',
                 (left_img *
                  255).astype(
@@ -172,8 +174,8 @@ def main():
             imageio.imwrite(
                 os.path.join(
                     args.target_dir,
-                    'right') +
-                target_fnum +
+                    'right') + '/' +
+                str(target_fnum) +
                 '.png',
                 (right_img *
                  255).astype(
@@ -181,8 +183,8 @@ def main():
             imageio.imwrite(
                 os.path.join(
                     args.target_dir,
-                    'left_meas') +
-                target_fnum +
+                    'left_meas') + '/' +
+                str(target_fnum) +
                 '.png',
                 (left_meas *
                  255).astype(
@@ -190,8 +192,8 @@ def main():
             imageio.imwrite(
                 os.path.join(
                     args.target_dir,
-                    'right_meas') +
-                target_fnum +
+                    'right_meas') + '/' +
+                str(target_fnum) +
                 '.png',
                 (right_meas *
                  255).astype(
@@ -199,8 +201,8 @@ def main():
             write_pfm(
                 os.path.join(
                     args.target_dir,
-                    'disp') +
-                target_fnum +
+                    'disp') + '/' +
+                str(target_fnum) +
                 '.pfm',
                 disp)
 
