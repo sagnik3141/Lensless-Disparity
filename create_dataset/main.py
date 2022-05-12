@@ -5,9 +5,10 @@ import numpy as np
 from PIL import Image
 from scipy import fft
 import cv2
+import imageio
 from tqdm import tqdm
 
-from file_io import read_disp
+from file_io import read_disp, write_pfm
 
 def channel2Lensless(imgC, psfC):
     """
@@ -88,7 +89,19 @@ def loadCropImg(left_path, right_path, disp_path):
     return left_img, right_img, disp
 
 def getArgs():
-    pass
+    
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--left_dir', type=str, default='image_clean/left')
+    parser.add_argument('--right_dir', type=str, default='image_clean/right')
+    parser.add_argument('--disp_dir', type=str, default='image_clean/disparity')
+    parser.add_argument('--target_dir', type=str, default='lensless_disp_dataset')
+    parser.add_argument('--psf_path', type=str, default='')
+    parser.add_argument('--num_passes', type=int, default=3)
+
+    args = parser.parse_args()
+
+    return args
 
 def main():
     args = getArgs()
@@ -106,6 +119,8 @@ def main():
     os.makedirs(os.path.join(args.target_dir, 'left'))
     os.makedirs(os.path.join(args.target_dir, 'right'))
     os.makedirs(os.path.join(args.target_dir, 'disp'))
+    os.makedirs(os.path.join(args.target_dir, 'left_meas'))
+    os.makedirs(os.path.join(args.target_dir, 'right_meas'))
 
     psf = np.load(args.psf_path)
 
@@ -121,8 +136,13 @@ def main():
             left_meas = RGB2Lensless(left_img, psf)
             right_meas = RGB2Lensless(right_img, psf)
 
-            
+            ### Save Dataset ###
 
+            imageio.imwrite(os.path.join(args.target_dir, 'left')+target_fnum+'.png', (left_img*255).astype(np.uint8))
+            imageio.imwrite(os.path.join(args.target_dir, 'right')+target_fnum+'.png', (right_img*255).astype(np.uint8))
+            imageio.imwrite(os.path.join(args.target_dir, 'left_meas')+target_fnum+'.png', (left_meas*255).astype(np.uint8))
+            imageio.imwrite(os.path.join(args.target_dir, 'right_meas')+target_fnum+'.png', (right_meas*255).astype(np.uint8))
+            write_pfm(os.path.join(args.target_dir, 'disp')+target_fnum+'.pfm', disp)
 
 
 if __name__=="__main__":
