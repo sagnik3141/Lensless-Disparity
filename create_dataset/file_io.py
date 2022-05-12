@@ -3,10 +3,12 @@ import re
 from PIL import Image
 import sys
 
+
 def read_disp(filename, subset=False):
     # Scene Flow dataset
     if filename.endswith('pfm'):
-        # For finalpass and cleanpass, gt disparity is positive, subset is negative
+        # For finalpass and cleanpass, gt disparity is positive, subset is
+        # negative
         disp = np.ascontiguousarray(_read_pfm(filename)[0])
         if subset:
             disp = -disp
