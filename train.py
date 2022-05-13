@@ -49,6 +49,29 @@ def train(model, train_loader, val_loader, args, device):
             loss.backward()
             optimizer.step()
 
+        writer.add_scalar('Train Epoch Loss', epoch_loss/(b*args.batch_size), i+1)
+
+        val_epoch_loss = 0
+        for b, (left_meas, right_meas, disp) in tqdm(enumerate(val_loader)):
+
+            left_meas = left_meas.to(device).float()
+            right_meas = right_meas.to(device).float()
+            disp = disp.to(device).float()
+
+            pred_disp = model(left_meas, right_meas)
+
+            loss = criterion(pred_disp, disp)
+            val_epoch_loss+=loss.item()
+
+            grid = torchvision.utils.make_grid(pred_disp/torch.max(pred_disp))
+            writer.add_image(f"Epoch - {i} | Validation - {b+1} | Predicted", grid)
+            grid = torchvision.utils.make_grid(disp/torch.max(disp))
+            writer.add_image(f"Epoch - {i} | Validation - {b+1} | Ground Truth", grid)
+
+        writer.add_scalar('Validation Epoch Loss', val_epoch_loss/b, i+1)
+
+        torch.save(model.state_dict(), os.path.join('checkpoints', args.exp_name))
+
 def getArgs():
     pass
 
