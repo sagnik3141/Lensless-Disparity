@@ -56,7 +56,7 @@ class DispModel(nn.Module):
         super().__init__()
         self.args = args
         self.invlayer = inversionLayer(args, psf)
-        cfg = load_configs(args.cfg_path)
+        cfg = self.load_configs(args.cfg_path)
         self.coex = load_class(
             cfg['model']['stereo']['name'],
             ['models.stereo'])(
