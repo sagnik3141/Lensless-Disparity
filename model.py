@@ -62,12 +62,12 @@ class DispModel(nn.Module):
             ['models.stereo'])(
             cfg['model']['stereo'])
 
-    def forward(self, left_meas, right_meas):
+    def forward(self, left_meas, right_meas, training):
 
         left_inv = self.invlayer(left_meas)
         right_inv = self.invlayer(right_meas)
 
-        return self.coex(left_inv, right_inv)[0]
+        return self.coex(left_inv, right_inv, training=training), left_inv
 
     @staticmethod
     def load_configs(path):
