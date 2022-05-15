@@ -6,6 +6,7 @@ from PIL import Image
 import torch
 from scipy import fft
 from torch.utils.data import Dataset
+import torchvision
 import cv2
 
 from torch.utils.data import DataLoader
@@ -32,11 +33,15 @@ class DispDataset(Dataset):
         left_meas = np.array(Image.open(left_meas_path))/255.0
         left_meas = np.transpose(left_meas, (2, 0, 1))
         left_meas = torch.from_numpy(left_meas)
+        left_meas = torchvision.transforms.CenterCrop(320)(left_meas)
+        left_meas = torchvision.transforms.Pad((64,0,64,0), fill=0, padding_mode='constant')(left_meas)
 
         right_meas_path = os.path.join(self.right_meas_dir, self.fnames[idx]+'.png')
         right_meas = np.array(Image.open(right_meas_path))/255.0
         right_meas = np.transpose(right_meas, (2, 0, 1))
         right_meas = torch.from_numpy(right_meas)
+        right_meas = torchvision.transforms.CenterCrop(320)(right_meas)
+        right_meas = torchvision.transforms.Pad((64,0,64,0), fill=0, padding_mode='constant')(right_meas)
 
         disp_path = os.path.join(self.disp_dir, self.fnames[idx]+'.pfm')
         disp = read_disp(disp_path)
@@ -75,7 +80,7 @@ def create_dataloaders(args, dataset):
         sampler=train_sampler)
     val_loader = DataLoader(
         dataset,
-        batch_size=args.batch_size,
+        batch_size=1,
         sampler=val_sampler)
     test_loader = DataLoader(
         dataset,
